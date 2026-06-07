@@ -1,0 +1,15 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <title>Lye's Blog</title>
+</head>
+<body>
+  <h1>欢迎来到闲人Lye忙时候</h1>
+  <% if (user) { %>
+    <p>你好，<%= user.username %>!<a href="/logout">退出</a></p>
+  <% } else { %>
+    <p><a href="/login">登录</a> | <a href="/register">注册</a></p>
+  <% } %>
+</body>
+</html>
