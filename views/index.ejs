@@ -7,9 +7,22 @@
 <body>
   <h1>欢迎来到闲人Lye忙时候</h1>
   <% if (user) { %>
-    <p>你好，<%= user.username %>!<a href="/logout">退出</a></p>
+    <p>你好，<%= user.username %>！<a href="/posts/write">写文章</a> | <a href="/logout">退出</a></p>
   <% } else { %>
     <p><a href="/login">登录</a> | <a href="/register">注册</a></p>
+  <% } %>
+
+  <hr>
+  <h2>文章列表</h2>
+  <% if (posts && posts.length > 0) { %>
+    <% posts.forEach(function(post) { %>
+      <div style="margin-bottom: 20px; border-bottom: 1px solid #eee;">
+        <h3><a href="/posts/<%= post.id %>"><%= post.title %></a></h3>
+        <p style="color: #888;">作者：<%= post.username %> | <%= post.created_at %></p>
+      </div>
+    <% }); %>
+  <% } else { %>
+    <p>暂无文章。</p>
   <% } %>
 </body>
 </html>

@@ -10,6 +10,18 @@ const authService = {
         const passwordHash = await bcrypt.hash(password, 10);
         const user = await userModel.create(username, passwordHash);
         return { success: true, user };
+    },
+
+    async login(username, password) {
+        const user = await userModel.getByUsername(username);
+        if (!user) {
+          return { success: false, error: '用户名或密码错误' };
+        }
+        const isMatch = await bcrypt.compare(password, user.password_hash);
+        if (!isMatch) {
+          return { success: false, error: '用户名或密码错误' };
+        }
+        return { success: true, user: { id: user.id, username: user.username } };
     }
 };
 

@@ -5,7 +5,7 @@ const sqlite3 = require('sqlite3').verbose();
   const db = new sqlite3.Database(dbPath);
 
   // 开启 WAL 模式，读写并发性能更好
-  db.pragma('journal_mode = WAL');
+  db.run('PRAGMA journal_mode = WAL');
 
   // 建表（IF NOT EXISTS 确保只建一次）
   db.serialize(() => {
