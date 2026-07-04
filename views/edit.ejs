@@ -1,0 +1,19 @@
+<%- include('partials/header', { title: '编辑文章' }) %>
+
+<h1>编辑文章</h1>
+<% if (error) { %>
+  <p style="color: red;"><%= error %></p>
+<% } %>
+<form action="/posts/<%= post.id %>/edit" method="POST">
+  <div>
+    <label>标题：</label>
+    <input type="text" name="title" required style="width: 300px;" value="<%= post.title %>">
+  </div>
+  <div>
+    <label>正文：</label><br>
+    <textarea name="content" required rows="15" cols="60"><%= post.content %></textarea>
+  </div>
+  <button type="submit">保存修改</button>
+</form>
+
+<%- include('partials/footer') %>

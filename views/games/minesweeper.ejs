@@ -1,0 +1,431 @@
+<%- include('../partials/header', { title: title }) %>
+
+<style>
+  #board {
+    display: inline-block;
+    border: 3px solid #7b7b7b;
+    background: #bdbdbd;
+    user-select: none;
+    line-height: 0;
+  }
+  .ms-row { display: flex; }
+  .ms-cell {
+    width: 26px;
+    height: 26px;
+    box-sizing: border-box;
+    font-family: monospace;
+    font-size: 16px;
+    font-weight: bold;
+    text-align: center;
+    line-height: 24px;
+    cursor: pointer;
+    background: #c0c0c0;
+    border: 2px solid;
+    border-color: #fff #7b7b7b #7b7b7b #fff;
+  }
+  .ms-cell.revealed {
+    background: #d9d9d9;
+    border: 1px solid #999;
+    cursor: default;
+  }
+  .ms-cell.mine { background: #ff5252; }
+  .ms-cell.n1 { color: #0000ff; }
+  .ms-cell.n2 { color: #008200; }
+  .ms-cell.n3 { color: #ff0000; }
+  .ms-cell.n4 { color: #000084; }
+  .ms-cell.n5 { color: #840000; }
+  .ms-cell.n6 { color: #008284; }
+  .ms-cell.n7 { color: #000000; }
+  .ms-cell.n8 { color: #808080; }
+  .ms-toolbar { margin: 12px 0; }
+  .ms-toolbar button { margin-right: 6px; }
+  .ms-status {
+    display: inline-flex;
+    gap: 20px;
+    align-items: center;
+    background: #333;
+    color: #ff4136;
+    font-family: monospace;
+    font-size: 20px;
+    padding: 6px 14px;
+    border-radius: 4px;
+    margin-bottom: 12px;
+  }
+  .ms-msg { font-size: 18px; font-weight: bold; margin: 10px 0; min-height: 24px; }
+  .ms-diff.active { font-weight: bold; text-decoration: underline; }
+  #leaderboard-table { border-collapse: collapse; margin-top: 10px; min-width: 320px; }
+  #leaderboard-table th, #leaderboard-table td {
+    border: 1px solid #ccc; padding: 6px 12px; text-align: left;
+  }
+  #leaderboard-table th { background: #f2f2f2; }
+  .lb-tab.active { font-weight: bold; text-decoration: underline; }
+</style>
+
+<h1>💣 扫雷</h1>
+
+<div class="ms-toolbar">
+  难度：
+  <button class="ms-diff" data-diff="beginner">初级 9×9</button>
+  <button class="ms-diff" data-diff="intermediate">中级 16×16</button>
+  <button class="ms-diff" data-diff="expert">高级 30×16</button>
+  <button id="restart-btn" style="margin-left: 16px; font-weight: bold;">🔄 重新开始</button>
+</div>
+
+<div class="ms-status">
+  <span>💣 <span id="mine-count">0</span></span>
+  <button id="reset-btn" style="font-size: 20px; background: #eee; border: none; cursor: pointer;">🙂</button>
+  <span>⏱️ <span id="timer">0</span></span>
+</div>
+
+<div class="ms-msg" id="game-msg"></div>
+
+<div id="board"></div>
+
+<hr style="margin: 24px 0;">
+
+<h2>🏆 排行榜（前十）</h2>
+<div>
+  <button class="lb-tab active" data-diff="beginner">初级</button>
+  <button class="lb-tab" data-diff="intermediate">中级</button>
+  <button class="lb-tab" data-diff="expert">高级</button>
+</div>
+<table id="leaderboard-table">
+  <thead>
+    <tr><th>排名</th><th>玩家</th><th>用时（秒）</th><th>时间</th></tr>
+  </thead>
+  <tbody id="leaderboard-body">
+    <tr><td colspan="4">加载中…</td></tr>
+  </tbody>
+</table>
+<% if (typeof user === 'undefined' || !user) { %>
+  <p style="color: #888; font-size: 14px;">💡 <a href="/login">登录</a> 后通关，成绩才会记录到排行榜。</p>
+<% } %>
+
+<script src="/js/utils.js"></script>
+<script>
+  window.MINE_LOGGED_IN = <%= (typeof user !== 'undefined' && user) ? 'true' : 'false' %>;
+  // 当前登录用户名（没登录是 null），用于在排行榜里高亮"我的记录"
+  window.MINE_USERNAME = <%- JSON.stringify((typeof user !== 'undefined' && user) ? user.username : null) %>;
+
+  (function () {
+    const DIFFICULTIES = {
+      beginner:     { rows: 9,  cols: 9,  mines: 10 },
+      intermediate: { rows: 16, cols: 16, mines: 40 },
+      expert:       { rows: 16, cols: 30, mines: 99 }
+    };
+
+    const boardEl = document.getElementById('board');
+    const mineCountEl = document.getElementById('mine-count');
+    const timerEl = document.getElementById('timer');
+    const msgEl = document.getElementById('game-msg');
+    const resetBtn = document.getElementById('reset-btn');
+
+    let current = 'beginner';
+    let config, grid, cellEls;
+    let started, gameOver, won, flags, revealedCount;
+    let timer = 0, timerInterval = null;
+
+    function startTimer() {
+      timerInterval = setInterval(function () {
+        timer++;
+        timerEl.textContent = timer;
+      }, 1000);
+    }
+    function stopTimer() {
+      if (timerInterval) { clearInterval(timerInterval); timerInterval = null; }
+    }
+
+    function init(diff) {
+      current = diff;
+      config = DIFFICULTIES[diff];
+      started = false;
+      gameOver = false;
+      won = false;
+      flags = 0;
+      revealedCount = 0;
+      timer = 0;
+      stopTimer();
+      timerEl.textContent = '0';
+      msgEl.textContent = '';
+      resetBtn.textContent = '🙂';
+      mineCountEl.textContent = config.mines;
+
+      // 初始化数据网格
+      grid = [];
+      cellEls = [];
+      for (let r = 0; r < config.rows; r++) {
+        const row = [];
+        for (let c = 0; c < config.cols; c++) {
+          row.push({ mine: false, revealed: false, flagged: false, adj: 0 });
+        }
+        grid.push(row);
+      }
+
+      // 渲染 DOM
+      boardEl.innerHTML = '';
+      for (let r = 0; r < config.rows; r++) {
+        const rowEl = document.createElement('div');
+        rowEl.className = 'ms-row';
+        const rowCells = [];
+        for (let c = 0; c < config.cols; c++) {
+          const cell = document.createElement('div');
+          cell.className = 'ms-cell';
+          cell.dataset.r = r;
+          cell.dataset.c = c;
+          rowEl.appendChild(cell);
+          rowCells.push(cell);
+        }
+        boardEl.appendChild(rowEl);
+        cellEls.push(rowCells);
+      }
+
+      // 高亮当前难度按钮
+      document.querySelectorAll('.ms-diff').forEach(function (b) {
+        b.classList.toggle('active', b.dataset.diff === diff);
+      });
+    }
+
+    function inBounds(r, c) {
+      return r >= 0 && r < config.rows && c >= 0 && c < config.cols;
+    }
+
+    function neighbors(r, c) {
+      const res = [];
+      for (let dr = -1; dr <= 1; dr++) {
+        for (let dc = -1; dc <= 1; dc++) {
+          if (dr === 0 && dc === 0) continue;
+          if (inBounds(r + dr, c + dc)) res.push([r + dr, c + dc]);
+        }
+      }
+      return res;
+    }
+
+    // 首次点击后布雷，避开首点格及其邻居
+    function placeMines(safeR, safeC) {
+      const safe = new Set();
+      safe.add(safeR + ',' + safeC);
+      neighbors(safeR, safeC).forEach(function (n) { safe.add(n[0] + ',' + n[1]); });
+
+      let placed = 0;
+      const total = config.rows * config.cols;
+      // 若可用格子不足（极端情况），只避开首点格
+      const maxAvoid = total - config.mines;
+      const avoid = safe.size <= maxAvoid ? safe : new Set([safeR + ',' + safeC]);
+
+      while (placed < config.mines) {
+        const r = Math.floor(Math.random() * config.rows);
+        const c = Math.floor(Math.random() * config.cols);
+        if (grid[r][c].mine) continue;
+        if (avoid.has(r + ',' + c)) continue;
+        grid[r][c].mine = true;
+        placed++;
+      }
+
+      for (let r = 0; r < config.rows; r++) {
+        for (let c = 0; c < config.cols; c++) {
+          if (grid[r][c].mine) continue;
+          grid[r][c].adj = neighbors(r, c).filter(function (n) {
+            return grid[n[0]][n[1]].mine;
+          }).length;
+        }
+      }
+    }
+
+    function renderCell(r, c) {
+      const cell = grid[r][c];
+      const el = cellEls[r][c];
+      el.className = 'ms-cell';
+      if (cell.revealed) {
+        el.classList.add('revealed');
+        if (cell.mine) {
+          el.classList.add('mine');
+          el.textContent = '💣';
+        } else if (cell.adj > 0) {
+          el.classList.add('n' + cell.adj);
+          el.textContent = cell.adj;
+        } else {
+          el.textContent = '';
+        }
+      } else if (cell.flagged) {
+        el.textContent = '🚩';
+      } else {
+        el.textContent = '';
+      }
+    }
+
+    // 泛洪展开空白格（迭代）
+    function reveal(r, c) {
+      const stack = [[r, c]];
+      while (stack.length) {
+        const [cr, cc] = stack.pop();
+        const cell = grid[cr][cc];
+        if (cell.revealed || cell.flagged) continue;
+        cell.revealed = true;
+        revealedCount++;
+        renderCell(cr, cc);
+        if (cell.adj === 0 && !cell.mine) {
+          neighbors(cr, cc).forEach(function (n) {
+            if (!grid[n[0]][n[1]].revealed) stack.push(n);
+          });
+        }
+      }
+    }
+
+    function revealAllMines() {
+      for (let r = 0; r < config.rows; r++) {
+        for (let c = 0; c < config.cols; c++) {
+          if (grid[r][c].mine) {
+            grid[r][c].revealed = true;
+            renderCell(r, c);
+          }
+        }
+      }
+    }
+
+    function lose() {
+      gameOver = true;
+      stopTimer();
+      revealAllMines();
+      resetBtn.textContent = '😵';
+      msgEl.textContent = '💥 踩雷了，游戏失败！';
+      msgEl.style.color = '#d00';
+    }
+
+    function win() {
+      gameOver = true;
+      won = true;
+      stopTimer();
+      resetBtn.textContent = '😎';
+      msgEl.style.color = '#080';
+      msgEl.textContent = '🎉 恭喜通关！用时 ' + timer + ' 秒。';
+      submitScore();
+    }
+
+    function checkWin() {
+      const total = config.rows * config.cols;
+      if (revealedCount === total - config.mines) win();
+    }
+
+    function handleLeftClick(r, c) {
+      if (gameOver) return;
+      const cell = grid[r][c];
+      if (cell.revealed || cell.flagged) return;
+
+      if (!started) {
+        started = true;
+        placeMines(r, c);
+        startTimer();
+      }
+
+      if (cell.mine) {
+        cell.revealed = true;
+        renderCell(r, c);
+        lose();
+        return;
+      }
+
+      reveal(r, c);
+      checkWin();
+    }
+
+    function handleRightClick(r, c) {
+      // 允许开局第一步之前就标旗（经典扫雷行为）；结束后不可标
+      if (gameOver) return;
+      const cell = grid[r][c];
+      if (cell.revealed) return;
+      cell.flagged = !cell.flagged;
+      flags += cell.flagged ? 1 : -1;
+      // Math.max 兜底，剩余雷数显示不出现负数
+      mineCountEl.textContent = Math.max(0, config.mines - flags);
+      renderCell(r, c);
+    }
+
+    // 事件委托
+    boardEl.addEventListener('click', function (e) {
+      const el = e.target.closest('.ms-cell');
+      if (!el) return;
+      handleLeftClick(+el.dataset.r, +el.dataset.c);
+    });
+    boardEl.addEventListener('contextmenu', function (e) {
+      e.preventDefault();
+      const el = e.target.closest('.ms-cell');
+      if (!el) return;
+      handleRightClick(+el.dataset.r, +el.dataset.c);
+    });
+
+    resetBtn.addEventListener('click', function () { init(current); });
+    document.getElementById('restart-btn').addEventListener('click', function () { init(current); });
+    document.querySelectorAll('.ms-diff').forEach(function (b) {
+      b.addEventListener('click', function () { init(b.dataset.diff); });
+    });
+
+    // ===== 成绩提交 & 排行榜 =====
+    function submitScore() {
+      if (!window.MINE_LOGGED_IN) {
+        msgEl.textContent += '（登录后通关可上榜）';
+        return;
+      }
+      fetch('/api/minesweeper/save', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ difficulty: current, time_seconds: timer })
+      })
+        // 把 res.ok 和 body 一起往下传，方便区分成功/失败
+        .then(function (res) {
+          return res.json().then(function (data) { return { ok: res.ok, data: data }; });
+        })
+        .then(function (result) {
+          if (!result.ok) {
+            msgEl.textContent += '（成绩未保存：' + (result.data.error || '出错') + '）';
+            return;
+          }
+          msgEl.textContent += ' 成绩已上榜！';
+          loadLeaderboard(current);
+        })
+        .catch(function (err) {
+          console.error('保存成绩失败', err);
+          msgEl.textContent += '（成绩保存失败，请检查网络）';
+        });
+    }
+
+    const lbBody = document.getElementById('leaderboard-body');
+    function loadLeaderboard(diff) {
+      document.querySelectorAll('.lb-tab').forEach(function (b) {
+        b.classList.toggle('active', b.dataset.diff === diff);
+      });
+      lbBody.innerHTML = '<tr><td colspan="4">加载中…</td></tr>';
+      fetch('/api/minesweeper/leaderboard?difficulty=' + diff)
+        .then(function (res) { return res.json(); })
+        .then(function (data) {
+          const rows = data.leaderboard || [];
+          if (rows.length === 0) {
+            lbBody.innerHTML = '<tr><td colspan="4">暂无记录</td></tr>';
+            return;
+          }
+          lbBody.innerHTML = rows.map(function (row, i) {
+            const date = (row.created_at || '').replace('T', ' ').slice(0, 16);
+            // 如果这行是当前登录用户的记录，高亮一下，方便一眼找到"我"
+            const isMe = window.MINE_USERNAME && row.username === window.MINE_USERNAME;
+            const rowStyle = isMe ? ' style="background:#fff7d6;font-weight:bold;"' : '';
+            const me = isMe ? ' （我）' : '';
+            return '<tr' + rowStyle + '><td>' + (i + 1) + '</td><td>' + escapeHtml(row.username) + me +
+              '</td><td>' + row.time_seconds + '</td><td>' + date + '</td></tr>';
+          }).join('');
+        })
+        .catch(function (err) {
+          console.error('加载排行榜失败', err);
+          lbBody.innerHTML = '<tr><td colspan="4">加载失败</td></tr>';
+        });
+    }
+
+    document.querySelectorAll('.lb-tab').forEach(function (b) {
+      b.addEventListener('click', function () { loadLeaderboard(b.dataset.diff); });
+    });
+
+    // 启动
+    init('beginner');
+    loadLeaderboard('beginner');
+  })();
+</script>
+
+<%- include('../partials/footer') %>

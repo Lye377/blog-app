@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title><%= typeof title !== 'undefined' ? title : "Lye's Blog" %></title>
+</head>
+<body>
+  <header style="display: flex; justify-content: space-between; align-items: center;">
+    <nav>
+      <a href="/">🏠 首页</a>
+      <% if (typeof user !== 'undefined' && user) { %>
+        <a href="/posts/write" style="margin-left: 12px;">✍️ 写文章</a>
+        <a href="/stats" style="margin-left: 12px;">📊 统计</a>
+      <% } %>
+      <a href="/games/minesweeper" style="margin-left: 12px;">💣 扫雷</a>
+      <a href="/chat" style="margin-left: 12px;">💬 对话闲人</a>
+    </nav>
+    <div>
+      <% if (typeof user !== 'undefined' && user) { %>
+        你好，<%= user.username %> | <a href="/logout">退出</a>
+      <% } else { %>
+        <a href="/login">登录</a> | <a href="/register">注册</a>
+      <% } %>
+    </div>
+  </header>
+  <hr>

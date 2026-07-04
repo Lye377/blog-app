@@ -1,16 +1,91 @@
-<!DOCTYPE html>
-<html lang="zh-CN">
-<head>
-  <meta charset="UTF-8">
-  <title><%= post.title %></title>
-</head>
-<body>
-  <h1><%= post.title %></h1>
-  <p style="color: #888;">
-    作者：<%= post.username %> | <%= post.created_at %>
+<%- include('partials/header', { title: post.title }) %>
+
+<h1><%= post.title %></h1>
+<p style="color: #888;">
+  作者：<%= post.username %><br>
+  创建时间：<%= post.created_at %>
+  <% if (post.updated_at && post.updated_at !== post.created_at) { %>
+    <br>最后编辑：<%= post.updated_at %>
+  <% } %>
+    <br>阅读：<%= (post.view_count || 0) %> 次
+</p>
+
+<!-- 点赞区域 -->
+<p>
+  <button id="like-btn" data-liked="<%= isLiked %>">
+    <%= isLiked ? '取消点赞' : '点赞' %>
+  </button>
+  <span>👍 <span id="like-count"><%= likeCount %></span></span>
+</p>
+
+<hr>
+<p><%= post.content %></p>
+<% if (user && user.id === post.user_id) { %>
+  <p>
+    <a href="/posts/<%= post.id %>/edit">编辑</a>
+    <form action="/posts/<%= post.id %>/delete" method="POST" style="display: inline;" onsubmit="return confirm('确定删除？');">
+      <button type="submit">删除</button>
+    </form>
   </p>
-  <hr>
-  <p><%= post.content %></p>
-  <p><a href="/">返回首页</a></p>
-</body>
-</html>
+<% } %>
+
+<hr>
+
+<!-- 评论区域 -->
+<h2>评论（<%= comments.length %>）</h2>
+<% if (comments.length === 0) { %>
+  <p style="color: #888;">还没有评论，来抢沙发吧～</p>
+<% } else { %>
+  <ul style="list-style: none; padding: 0;">
+    <% comments.forEach(function (comment) { %>
+      <li style="border-bottom: 1px solid #eee; padding: 8px 0;">
+        <strong><%= comment.username %></strong>
+        <span style="color: #888; font-size: 0.85em;"><%= comment.created_at %></span>
+        <p style="margin: 4px 0;"><%= comment.content %></p>
+      </li>
+    <% }); %>
+  </ul>
+<% } %>
+
+<!-- 评论表单 -->
+<% if (user) { %>
+  <form action="/posts/<%= post.id %>/comment" method="POST">
+    <p>
+      <textarea name="content" rows="3" cols="50" placeholder="写下你的评论..." required></textarea>
+    </p>
+    <button type="submit">发表评论</button>
+  </form>
+<% } else { %>
+  <p><a href="/login">登录</a> 后即可评论</p>
+<% } %>
+
+<script>
+  (function () {
+    var btn = document.getElementById('like-btn');
+    if (!btn) return;
+    btn.addEventListener('click', function () {
+      fetch('/posts/<%= post.id %>/like', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' }
+      })
+        .then(function (res) {
+          if (res.status === 401) {
+            window.location.href = '/login';
+            return null;
+          }
+          return res.json();
+        })
+        .then(function (data) {
+          if (!data) return;
+          document.getElementById('like-count').textContent = data.count;
+          btn.dataset.liked = data.liked;
+          btn.textContent = data.liked ? '取消点赞' : '点赞';
+        })
+        .catch(function (err) {
+          console.error('点赞失败', err);
+        });
+    });
+  })();
+</script>
+
+<%- include('partials/footer') %>

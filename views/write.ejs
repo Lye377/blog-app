@@ -1,25 +1,19 @@
-<!DOCTYPE html>
-<html lang="zh-CN">
-<head>
-  <meta charset="UTF-8">
-  <title>写文章</title>
-</head>
-<body>
-  <h1>写文章</h1>
-  <% if (error) { %>
-    <p style="color: red;"><%= error %></p>
-  <% } %>
-  <form action="/posts/write" method="POST">
-    <div>
-      <label>标题：</label>
-      <input type="text" name="title" required style="width: 300px;">
-    </div>
-    <div>
-      <label>正文：</label><br>
-      <textarea name="content" required rows="15" cols="60"></textarea>
-    </div>
-    <button type="submit">发布</button>
-  </form>
-  <p><a href="/">返回首页</a></p>
-</body>
-</html>
+<%- include('partials/header', { title: '写文章' }) %>
+
+<h1>写文章</h1>
+<% if (error) { %>
+  <p style="color: red;"><%= error %></p>
+<% } %>
+<form action="/posts/write" method="POST">
+  <div>
+    <label>标题：</label>
+    <input type="text" name="title" required style="width: 300px;">
+  </div>
+  <div>
+    <label>正文：</label><br>
+    <textarea name="content" required rows="15" cols="60"></textarea>
+  </div>
+  <button type="submit">发布</button>
+</form>
+
+<%- include('partials/footer') %>

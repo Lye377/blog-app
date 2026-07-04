@@ -1,26 +1,21 @@
-  <!DOCTYPE html>
-  <html lang="zh-CN">
-  <head>
-    <meta charset="UTF-8">
-    <title>注册</title>
-  </head>
-  <body>
-    <h1>注册</h1>
-    <p style="color: #888; font-size: 14px;">温馨提示：此处密码为单向加密后储存，闲人什么都看不到捏</p>
-    <% if (error) { %>
-      <p style="color: red;"><%= error %></p>
-    <% } %>
-    <form action="/register" method="POST">
-      <div>
-        <label>用户名：</label>
-        <input type="text" name="username" required minlength="3">
-      </div>
-      <div>
-        <label>密码：</label>
-        <input type="password" name="password" required minlength="6">
-      </div>
-      <button type="submit">注册</button>
-    </form>
-    <p>已有账号？<a href="/login">登录</a></p>
-  </body>
-  </html>
+<%- include('partials/header', { title: '注册' }) %>
+
+<h1>注册</h1>
+<p style="color: #888; font-size: 14px;">温馨提示：此处密码为单向加密后储存，闲人什么都看不到捏</p>
+<% if (error) { %>
+  <p style="color: red;"><%= error %></p>
+<% } %>
+<form action="/register" method="POST">
+  <div>
+    <label>用户名：</label>
+    <input type="text" name="username" required minlength="3">
+  </div>
+  <div>
+    <label>密码：</label>
+    <input type="password" name="password" required minlength="6">
+  </div>
+  <button type="submit">注册</button>
+</form>
+<p>已有账号？<a href="/login">登录</a></p>
+
+<%- include('partials/footer') %>

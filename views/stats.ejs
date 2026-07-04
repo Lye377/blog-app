@@ -1,0 +1,53 @@
+<%- include('partials/header', { title: title }) %>
+
+<h1>📊 阅读统计</h1>
+
+<% if (postCount === 0) { %>
+  <p style="color: #888;">暂无数据（还没有文章，或文章暂无阅读）。</p>
+<% } else { %>
+  <!-- 数字卡片 -->
+  <div style="display: flex; gap: 16px; margin: 16px 0;">
+    <div style="border: 1px solid #ddd; border-radius: 8px; padding: 16px 24px; background: #f7fbff;">
+      <div style="font-size: 13px; color: #888;">总阅读量</div>
+      <div style="font-size: 32px; font-weight: bold; color: #1a73e8;"><%= totalViews %></div>
+    </div>
+    <div style="border: 1px solid #ddd; border-radius: 8px; padding: 16px 24px; background: #f7fff9;">
+      <div style="font-size: 13px; color: #888;">文章数量</div>
+      <div style="font-size: 32px; font-weight: bold; color: #34a853;"><%= postCount %></div>
+    </div>
+  </div>
+
+  <!-- 柱状图 -->
+  <div style="max-width: 760px;">
+    <canvas id="viewsChart" height="240"></canvas>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <script>
+    // 后端把统计数据用不转义标签序列化成 JSON 注入前端，保证是合法 JS 数组
+    var statsData = <%- JSON.stringify(stats) %>;
+    var labels = statsData.map(function (s) { return s.title; });
+    var counts = statsData.map(function (s) { return s.view_count || 0; });
+
+    new Chart(document.getElementById('viewsChart'), {
+      type: 'bar',
+      data: {
+        labels: labels,
+        datasets: [{
+          label: '阅读次数',
+          data: counts,
+          backgroundColor: '#1a73e8'
+        }]
+      },
+      options: {
+        responsive: true,
+        plugins: { legend: { display: false } },
+        scales: {
+          y: { beginAtZero: true, ticks: { precision: 0 } }
+        }
+      }
+    });
+  </script>
+<% } %>
+
+<%- include('partials/footer') %>

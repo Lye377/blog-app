@@ -1,0 +1,32 @@
+<%- include('partials/header', { title: title }) %>
+
+<h1>⚙️ API Key 设置</h1>
+
+<% if (saved) { %>
+  <p style="color: green;">✅ 已保存</p>
+<% } %>
+
+<p style="color: #666; max-width: 560px;">
+  请输入你的 DeepSeek API Key（前往
+  <a href="https://platform.deepseek.com" target="_blank" rel="noopener">platform.deepseek.com</a>
+  获取），Key 仅保存在你自己的账户中，不会展示给其他人。
+</p>
+
+<p style="color: #888;">当前剩余免费次数：<strong><%= freeChatCount %></strong> 次</p>
+
+<% if (hasKey) { %>
+  <p style="color: #888;">已保存的 Key：<code><%= maskedKey %></code>（只显示后 4 位）</p>
+<% } %>
+
+<form action="/settings" method="POST">
+  <div>
+    <label>DeepSeek API Key：</label><br>
+    <input type="password" name="api_key" style="width: 360px;" placeholder="sk-..." autocomplete="off">
+  </div>
+  <p style="color: #aaa; font-size: 13px;">留空并保存即可清除已存的 Key。</p>
+  <button type="submit">保存</button>
+</form>
+
+<p style="margin-top: 16px;"><a href="/chat">← 返回聊天</a></p>
+
+<%- include('partials/footer') %>
