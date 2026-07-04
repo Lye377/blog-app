@@ -8,7 +8,9 @@ const authService = {
           return { success: false, error: '该用户名已被使用' };
         }
         const passwordHash = await bcrypt.hash(password, 10);
-        const user = await userModel.create(username, passwordHash);
+        // 第一个注册的用户自动成为站长（个人博客：站长才能写文章）
+        const isAdmin = (await userModel.count()) === 0;
+        const user = await userModel.create(username, passwordHash, isAdmin);
         return { success: true, user };
     },
 
@@ -21,7 +23,8 @@ const authService = {
         if (!isMatch) {
           return { success: false, error: '用户名或密码错误' };
         }
-        return { success: true, user: { id: user.id, username: user.username } };
+        // is_admin 存进 session，模板和路由据此判断能否写/管文章
+        return { success: true, user: { id: user.id, username: user.username, is_admin: user.is_admin } };
     }
 };
 

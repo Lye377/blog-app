@@ -39,6 +39,13 @@ app.use((req, res, next) => {
   next();
 });
 
+// 权限中间件：仅站长（is_admin）可访问。用于「写/管文章」这类操作。
+function requireAdmin(req, res, next) {
+  if (!req.session.user) return res.redirect('/login');
+  if (!req.session.user.is_admin) return res.status(403).send('只有站长可以进行此操作');
+  next();
+}
+
 // ========== 首页 ==========
 app.get('/', async (req, res) => {
   const posts = await postModel.getAll();
@@ -83,14 +90,12 @@ app.get('/logout', (req, res) => {
   });
 });
 
-// ========== 写文章（需要登录） ==========
-app.get('/posts/write', (req, res) => {
-  if (!req.session.user) return res.redirect('/login');
+// ========== 写文章（仅站长） ==========
+app.get('/posts/write', requireAdmin, (req, res) => {
   res.render('write', { error: null });
 });
 
-app.post('/posts/write', async (req, res) => {
-  if (!req.session.user) return res.redirect('/login');
+app.post('/posts/write', requireAdmin, async (req, res) => {
   const { title, content } = req.body;
   if (!title || !content) {
     return res.render('write', { error: '标题和内容不能为空' });
@@ -228,9 +233,8 @@ app.get('/api/minesweeper/leaderboard', async (req, res) => {
   res.json({ difficulty, leaderboard: rows });
 });
 
-// ========== 阅读统计仪表盘（需要登录） ==========
-app.get('/stats', async (req, res) => {
-  if (!req.session.user) return res.redirect('/login');
+// ========== 阅读统计仪表盘（仅站长，站长的数据看板） ==========
+app.get('/stats', requireAdmin, async (req, res) => {
   const stats = await postModel.getViewStats();
   const totalViews = await postModel.getTotalViews();
   res.render('stats', {
@@ -301,6 +305,6 @@ app.post('/settings', async (req, res) => {
 
 // 启动服务器
 const PORT = 3000;
-app.listen(PORT, () => {
+app.listen(PORT, '0.0.0.0', () => {
   console.log(`Server running at http://localhost:${PORT}`);
 });

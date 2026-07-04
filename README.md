@@ -1,6 +1,10 @@
 # Lye's Blog
 
-一个从零搭建的个人博客系统，作为 xlab 教学项目验收。除用户 / 博客 / 评论 / 点赞四大基础模块外，还实现了阅读统计、扫雷游戏、AI 对话三个进阶功能。
+一个从零搭建的**个人博客**系统，作为 xlab 教学项目验收。除用户 / 博客 / 评论 / 点赞四大基础模块外，还实现了阅读统计、扫雷游戏、AI 对话三个进阶功能。
+
+🔗 **在线访问：** http://118.178.231.82:3000/ （部署于阿里云 ECS）
+
+**定位说明（权限模型）：** 这是个人博客，不是多人写作平台。只有**站长**（第一个注册的用户，`is_admin=1`）能写文章、编辑/删除文章、看阅读统计；其他访客可以注册登录，但只能**看文章 + 评论 + 点赞 + 玩扫雷 + 和 AI 聊天**，不能发文章。
 
 ## 技术选型及理由
 
@@ -76,6 +80,7 @@ blog-app/
 | id | INTEGER | PRIMARY KEY AUTOINCREMENT | 用户唯一标识 |
 | username | TEXT | NOT NULL UNIQUE | 用户名，不可重复 |
 | password_hash | TEXT | NOT NULL | bcrypt 哈希后的密码 |
+| is_admin | INTEGER | DEFAULT 0 | 是否站长（1=站长，只有站长能写/管文章） |
 | free_chat_count | INTEGER | DEFAULT 10 | AI 对话剩余免费次数 |
 | own_api_key | TEXT | DEFAULT '' | 用户自己的 DeepSeek Key |
 | created_at | DATETIME | DEFAULT CURRENT_TIMESTAMP | 注册时间 |
@@ -143,12 +148,12 @@ blog-app/
 
 ### 博客文章
 
-| 方法 | 路径 | 功能 | 状态 |
-|------|------|------|------|
-| GET / POST | `/posts/write` | 写文章页 / 发布 | ✅ |
-| GET | `/posts/:id` | 文章详情（阅读量 +1） | ✅ |
-| GET / POST | `/posts/:id/edit` | 编辑页 / 保存编辑 | ✅ |
-| POST | `/posts/:id/delete` | 删除文章 | ✅ |
+| 方法 | 路径 | 功能 | 权限 | 状态 |
+|------|------|------|------|------|
+| GET / POST | `/posts/write` | 写文章页 / 发布 | 仅站长 | ✅ |
+| GET | `/posts/:id` | 文章详情（阅读量 +1） | 公开 | ✅ |
+| GET / POST | `/posts/:id/edit` | 编辑页 / 保存编辑 | 仅作者（站长） | ✅ |
+| POST | `/posts/:id/delete` | 删除文章 | 仅作者（站长） | ✅ |
 
 ### 评论 & 点赞
 
@@ -161,7 +166,7 @@ blog-app/
 
 | 方法 | 路径 | 功能 | 状态 |
 |------|------|------|------|
-| GET | `/stats` | 阅读统计仪表盘（需登录） | ✅ |
+| GET | `/stats` | 阅读统计仪表盘（仅站长） | ✅ |
 
 ### 扫雷游戏
 
@@ -194,8 +199,11 @@ node app.js
 #    开发时推荐用 nodemon 自动重启：npx nodemon app.js
 
 # 4. 浏览器访问
-# http://localhost:3000
+# 本地：http://localhost:3000
+# 线上：http://118.178.231.82:3000/（阿里云 ECS，已部署）
 ```
+
+> **部署说明：** 项目已部署在阿里云 ECS，通过 `node app.js` 常驻运行，监听 3000 端口对外提供服务。生产环境建议用 `pm2` 等进程管理工具保证掉线自动重启。
 
 ## 开发约定
 

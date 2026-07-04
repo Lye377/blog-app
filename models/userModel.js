@@ -21,15 +21,25 @@ const db = require('./db');
       });
     },
 
-    // 创建用户
-    create(username, passwordHash) {
+    // 统计用户总数（用于判断"第一个注册的人 = 站长"）
+    count() {
+      return new Promise((resolve, reject) => {
+        db.get('SELECT COUNT(*) AS c FROM users', (err, row) => {
+          if (err) return reject(err);
+          resolve(row.c);
+        });
+      });
+    },
+
+    // 创建用户（isAdmin 为 true 时标记为站长）
+    create(username, passwordHash, isAdmin) {
       return new Promise((resolve, reject) => {
         db.run(
-          'INSERT INTO users (username, password_hash) VALUES (?, ?)',
-          [username, passwordHash],
+          'INSERT INTO users (username, password_hash, is_admin) VALUES (?, ?, ?)',
+          [username, passwordHash, isAdmin ? 1 : 0],
           function (err) {
             if (err) return reject(err);
-            resolve({ id: this.lastID, username });
+            resolve({ id: this.lastID, username, is_admin: isAdmin ? 1 : 0 });
           }
         );
       });

@@ -82,6 +82,8 @@ const sqlite3 = require('sqlite3').verbose();
     db.run('ALTER TABLE posts ADD COLUMN view_count INTEGER DEFAULT 0', () => {});
     db.run('ALTER TABLE users ADD COLUMN free_chat_count INTEGER DEFAULT 10', () => {});
     db.run("ALTER TABLE users ADD COLUMN own_api_key TEXT DEFAULT ''", () => {});
+    // is_admin：是否站长。1 = 站长（能写/管文章），0 = 普通用户（只能看+互动）
+    db.run('ALTER TABLE users ADD COLUMN is_admin INTEGER DEFAULT 0', () => {});
 
   });
 
