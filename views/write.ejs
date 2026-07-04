@@ -2,7 +2,7 @@
 
 <h1>写文章</h1>
 <% if (error) { %>
-  <p style="color: red;"><%= error %></p>
+  <p class="error"><%= error %></p>
 <% } %>
 <form action="/posts/write" method="POST">
   <div>

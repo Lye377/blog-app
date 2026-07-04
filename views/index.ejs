@@ -5,9 +5,9 @@
 <h2>文章列表</h2>
 <% if (posts && posts.length > 0) { %>
   <% posts.forEach(function(post) { %>
-    <div style="margin-bottom: 20px; border-bottom: 1px solid #eee;">
+    <div class="post-card">
       <h3><a href="/posts/<%= post.id %>"><%= post.title %></a></h3>
-      <p style="color: #888;">作者：<%= post.username %> | <%= post.created_at %> | 阅读：<%= post.view_count || 0 %></p>
+      <p class="post-meta">作者：<%= post.username %> | <%= post.created_at %> | 阅读：<%= post.view_count || 0 %></p>
     </div>
   <% }); %>
 <% } else { %>

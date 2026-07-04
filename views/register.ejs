@@ -3,7 +3,7 @@
 <h1>注册</h1>
 <p style="color: #888; font-size: 14px;">温馨提示：此处密码为单向加密后储存，闲人什么都看不到捏</p>
 <% if (error) { %>
-  <p style="color: red;"><%= error %></p>
+  <p class="error"><%= error %></p>
 <% } %>
 <form action="/register" method="POST">
   <div>

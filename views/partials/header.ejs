@@ -4,17 +4,18 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title><%= typeof title !== 'undefined' ? title : "Lye's Blog" %></title>
+  <link rel="stylesheet" href="/css/style.css">
 </head>
 <body>
-  <header style="display: flex; justify-content: space-between; align-items: center;">
+  <header>
     <nav>
       <a href="/">🏠 首页</a>
-      <% if (typeof user !== 'undefined' && user && user.is_admin) { %>
-        <a href="/posts/write" style="margin-left: 12px;">✍️ 写文章</a>
-        <a href="/stats" style="margin-left: 12px;">📊 统计</a>
+      <% if (typeof user !== 'undefined' && user) { %>
+        <a href="/posts/write">✍️ 写文章</a>
+        <a href="/stats">📊 统计</a>
       <% } %>
-      <a href="/games/minesweeper" style="margin-left: 12px;">💣 扫雷</a>
-      <a href="/chat" style="margin-left: 12px;">💬 对话闲人</a>
+      <a href="/games/minesweeper">💣 扫雷</a>
+      <a href="/chat">💬 对话闲人</a>
     </nav>
     <div>
       <% if (typeof user !== 'undefined' && user) { %>
