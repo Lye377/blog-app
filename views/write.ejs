@@ -1,17 +1,19 @@
 <%- include('partials/header', { title: '写文章' }) %>
 
+<p class="eyebrow">NEW FIELD NOTE</p>
 <h1>写文章</h1>
+<p class="page-intro">先把想法写准确，再让它变得漂亮。</p>
 <% if (error) { %>
   <p class="error"><%= error %></p>
 <% } %>
 <form action="/posts/write" method="POST">
   <div>
-    <label>标题：</label>
-    <input type="text" name="title" required style="width: 300px;">
+    <label>标题</label>
+    <input type="text" name="title" required placeholder="这篇文章要说什么？">
   </div>
   <div>
-    <label>正文：</label><br>
-    <textarea name="content" required rows="15" cols="60"></textarea>
+    <label>正文</label>
+    <textarea name="content" required rows="15" placeholder="从第一句话开始…"></textarea>
   </div>
   <button type="submit">发布</button>
 </form>

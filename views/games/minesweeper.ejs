@@ -3,11 +3,13 @@
 <style>
   #board {
     display: inline-block;
-    border: 3px solid #7b7b7b;
+    border: 5px solid #66758a;
     background: #bdbdbd;
+    box-shadow: 12px 12px 0 rgba(20, 87, 217, .12);
     user-select: none;
     line-height: 0;
   }
+  .board-scroll { max-width: 100%; overflow-x: auto; padding: 0 12px 18px 0; }
   .ms-row { display: flex; }
   .ms-cell {
     width: 26px;
@@ -37,31 +39,32 @@
   .ms-cell.n6 { color: #008284; }
   .ms-cell.n7 { color: #000000; }
   .ms-cell.n8 { color: #808080; }
-  .ms-toolbar { margin: 12px 0; }
-  .ms-toolbar button { margin-right: 6px; }
+  .ms-toolbar { display: flex; flex-wrap: wrap; gap: 7px; align-items: center; margin: 18px 0; }
+  .ms-toolbar button { margin-right: 0; }
   .ms-status {
     display: inline-flex;
     gap: 20px;
     align-items: center;
-    background: #333;
-    color: #ff4136;
+    background: var(--ink);
+    color: var(--coral);
     font-family: monospace;
     font-size: 20px;
     padding: 6px 14px;
-    border-radius: 4px;
+    border-radius: 12px;
     margin-bottom: 12px;
   }
   .ms-msg { font-size: 18px; font-weight: bold; margin: 10px 0; min-height: 24px; }
-  .ms-diff.active { font-weight: bold; text-decoration: underline; }
-  #leaderboard-table { border-collapse: collapse; margin-top: 10px; min-width: 320px; }
+  .ms-diff.active, .lb-tab.active { border-color: var(--ink); color: white; background: var(--ink); box-shadow: none; }
+  #leaderboard-table { width: 100%; max-width: 720px; border-collapse: collapse; margin-top: 12px; min-width: 320px; }
   #leaderboard-table th, #leaderboard-table td {
     border: 1px solid #ccc; padding: 6px 12px; text-align: left;
   }
-  #leaderboard-table th { background: #f2f2f2; }
-  .lb-tab.active { font-weight: bold; text-decoration: underline; }
+  #leaderboard-table th { background: #e8eef6; }
 </style>
 
-<h1>💣 扫雷</h1>
+<p class="eyebrow">A SMALL LOGIC BREAK</p>
+<h1>扫雷</h1>
+<p class="page-intro">左键探索，右键标记。第一步永远安全，接下来交给判断。</p>
 
 <div class="ms-toolbar">
   难度：
@@ -79,11 +82,11 @@
 
 <div class="ms-msg" id="game-msg"></div>
 
-<div id="board"></div>
+<div class="board-scroll"><div id="board"></div></div>
 
 <hr style="margin: 24px 0;">
 
-<h2>🏆 排行榜（前十）</h2>
+<h2>排行榜 · 前十</h2>
 <div>
   <button class="lb-tab active" data-diff="beginner">初级</button>
   <button class="lb-tab" data-diff="intermediate">中级</button>

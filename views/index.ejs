@@ -1,17 +1,32 @@
 <%- include('partials/header', { title: "Lye's Blog" }) %>
 
-<h1>欢迎来到闲人Lye忙时候</h1>
+<section class="hero">
+  <div>
+    <p class="eyebrow">Lye's digital garden · since now</p>
+    <h1>闲人 Lye，<span>忙时候。</span></h1>
+    <p class="hero-copy">收集路上的想法、代码与偶然发现。这里不追赶热点，只认真保存值得再读一遍的东西。</p>
+  </div>
+  <aside class="hero-note">
+    <strong>空闲不是停下</strong>
+    <p>它是给好奇心留一个入口。读篇文章，聊几句，或者扫一局雷。</p>
+  </aside>
+</section>
 
-<h2>文章列表</h2>
-<% if (posts && posts.length > 0) { %>
-  <% posts.forEach(function(post) { %>
-    <div class="post-card">
-      <h3><a href="/posts/<%= post.id %>"><%= post.title %></a></h3>
-      <p class="post-meta">作者：<%= post.username %> | <%= post.created_at %> | 阅读：<%= post.view_count || 0 %></p>
-    </div>
-  <% }); %>
-<% } else { %>
-  <p>暂无文章。</p>
-<% } %>
+<p class="section-kicker">FIELD NOTES / <%= posts ? posts.length : 0 %> ENTRIES</p>
+<h2>最近写下的</h2>
+<div class="post-list">
+  <% if (posts && posts.length > 0) { %>
+    <% posts.forEach(function(post) { %>
+      <article class="post-card">
+        <div>
+          <h3><a href="/posts/<%= post.id %>"><%= post.title %></a></h3>
+          <p class="post-meta"><%= post.created_at %> · BY <%= post.username %> · <%= post.view_count || 0 %> READS</p>
+        </div>
+      </article>
+    <% }); %>
+  <% } else { %>
+    <p class="empty-state">纸页还是空的。第一篇文章会从这里开始。</p>
+  <% } %>
+</div>
 
 <%- include('partials/footer') %>

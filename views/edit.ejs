@@ -1,16 +1,18 @@
 <%- include('partials/header', { title: '编辑文章' }) %>
 
+<p class="eyebrow">REVISE FIELD NOTE</p>
 <h1>编辑文章</h1>
+<p class="page-intro">保留真正想说的，其余都可以重写。</p>
 <% if (error) { %>
   <p class="error"><%= error %></p>
 <% } %>
 <form action="/posts/<%= post.id %>/edit" method="POST">
   <div>
-    <label>标题：</label>
-    <input type="text" name="title" required style="width: 300px;" value="<%= post.title %>">
+    <label>标题</label>
+    <input type="text" name="title" required value="<%= post.title %>">
   </div>
   <div>
-    <label>正文：</label><br>
+    <label>正文</label>
     <textarea name="content" required rows="15" cols="60"><%= post.content %></textarea>
   </div>
   <button type="submit">保存修改</button>

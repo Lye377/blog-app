@@ -1,32 +1,30 @@
 <%- include('partials/header', { title: post.title }) %>
 
-<h1><%= post.title %></h1>
-<p class="post-meta">
-  作者：<%= post.username %><br>
-  创建时间：<%= post.created_at %>
-  <% if (post.updated_at && post.updated_at !== post.created_at) { %>
-    <br>最后编辑：<%= post.updated_at %>
-  <% } %>
-    <br>阅读：<%= (post.view_count || 0) %> 次
-</p>
+<header class="article-header">
+  <p class="eyebrow">FIELD NOTE · <%= post.view_count || 0 %> READS</p>
+  <h1><%= post.title %></h1>
+  <p class="post-meta">
+    BY <%= post.username %> · <%= post.created_at %>
+    <% if (post.updated_at && post.updated_at !== post.created_at) { %>
+      · UPDATED <%= post.updated_at %>
+    <% } %>
+  </p>
+  <div class="article-actions">
+    <button id="like-btn" data-liked="<%= isLiked %>">
+      <%= isLiked ? '取消点赞' : '喜欢这篇' %>
+    </button>
+    <span class="like-count">♥ <span id="like-count"><%= likeCount %></span></span>
+  </div>
+</header>
 
-<!-- 点赞区域 -->
-<p>
-  <button id="like-btn" data-liked="<%= isLiked %>">
-    <%= isLiked ? '取消点赞' : '点赞' %>
-  </button>
-  <span>👍 <span id="like-count"><%= likeCount %></span></span>
-</p>
-
-<hr>
-<p><%= post.content %></p>
+<article class="article-body"><%= post.content %></article>
 <% if (user && user.id === post.user_id) { %>
-  <p>
+  <div class="article-actions">
     <a href="/posts/<%= post.id %>/edit">编辑</a>
     <form action="/posts/<%= post.id %>/delete" method="POST" style="display: inline;" onsubmit="return confirm('确定删除？');">
-      <button type="submit">删除</button>
+      <button class="danger-button" type="submit">删除</button>
     </form>
-  </p>
+  </div>
 <% } %>
 
 <hr>
@@ -34,7 +32,7 @@
 <!-- 评论区域 -->
 <h2>评论（<%= comments.length %>）</h2>
 <% if (comments.length === 0) { %>
-  <p style="color: #888;">还没有评论，来抢沙发吧～</p>
+    <p class="page-intro">还没有评论。写下第一条回应吧。</p>
 <% } else { %>
   <ul class="comment-list">
     <% comments.forEach(function (comment) { %>
@@ -79,7 +77,7 @@
           if (!data) return;
           document.getElementById('like-count').textContent = data.count;
           btn.dataset.liked = data.liked;
-          btn.textContent = data.liked ? '取消点赞' : '点赞';
+          btn.textContent = data.liked ? '取消点赞' : '喜欢这篇';
         })
         .catch(function (err) {
           console.error('点赞失败', err);

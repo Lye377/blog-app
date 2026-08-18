@@ -1,17 +1,18 @@
 <%- include('partials/header', { title: '注册' }) %>
 
+<p class="eyebrow">JOIN THE GARDEN</p>
 <h1>注册</h1>
-<p style="color: #888; font-size: 14px;">温馨提示：此处密码为单向加密后储存，闲人什么都看不到捏</p>
+<p class="page-intro">创建一个名字，参与讨论并留下游戏成绩。密码会单向加密储存。</p>
 <% if (error) { %>
   <p class="error"><%= error %></p>
 <% } %>
 <form action="/register" method="POST">
   <div>
-    <label>用户名：</label>
+    <label>用户名</label>
     <input type="text" name="username" required minlength="3">
   </div>
   <div>
-    <label>密码：</label>
+    <label>密码</label>
     <input type="password" name="password" required minlength="6">
   </div>
   <button type="submit">注册</button>

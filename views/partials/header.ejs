@@ -7,22 +7,28 @@
   <link rel="stylesheet" href="/css/style.css">
 </head>
 <body>
-  <header>
-    <nav>
-      <a href="/">🏠 首页</a>
+  <header class="site-header">
+    <a class="brand" href="/" aria-label="闲人 Lye 的首页">
+      <span class="brand-mark">L.</span>
+      <span class="brand-text">闲人 Lye</span>
+    </a>
+    <nav class="site-nav" aria-label="主要导航">
+      <a href="/">文章</a>
       <% if (typeof user !== 'undefined' && user) { %>
-        <a href="/posts/write">✍️ 写文章</a>
-        <a href="/stats">📊 统计</a>
+        <a href="/posts/write">写作</a>
+        <a href="/stats">阅读统计</a>
       <% } %>
-      <a href="/games/minesweeper">💣 扫雷</a>
-      <a href="/chat">💬 对话闲人</a>
+      <a href="/games/minesweeper">扫雷</a>
+      <a href="/chat">与闲人对话</a>
     </nav>
-    <div>
+    <div class="account-nav">
       <% if (typeof user !== 'undefined' && user) { %>
-        你好，<%= user.username %> | <a href="/logout">退出</a>
+        <span class="user-chip"><span class="user-dot"></span><span class="account-label"><%= user.username %></span></span>
+        <a href="/logout">退出</a>
       <% } else { %>
-        <a href="/login">登录</a> | <a href="/register">注册</a>
+        <a href="/login">登录</a>
+        <a href="/register">注册</a>
       <% } %>
     </div>
   </header>
-  <hr>
+  <main>
